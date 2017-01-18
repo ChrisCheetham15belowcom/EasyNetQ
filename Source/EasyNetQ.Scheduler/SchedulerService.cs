@@ -71,7 +71,6 @@ namespace EasyNetQ.Scheduler
 
         public void OnPublishTimerTick(object state)
         {
-            if (!bus.IsConnected) return;
             try
             {
                 var declaredExchanges = new ConcurrentDictionary<string, IExchange>();
@@ -81,6 +80,12 @@ namespace EasyNetQ.Scheduler
                     return bus.Advanced.ExchangeDeclare(exchangeName, ExchangeType.Topic);
                 };
 
+                if (!bus.IsConnected)
+                {
+                    log.InfoWrite("Not connected");
+
+                    return;
+                }
 
                 using (var scope = new TransactionScope())
                 {
@@ -106,7 +111,7 @@ namespace EasyNetQ.Scheduler
             }
             catch (Exception exception)
             {
-                log.ErrorWrite("Error in schedule pol\r\n{0}", exception);
+                log.ErrorWrite("Error in schedule poll\r\n{0}", exception);
             }
         }
 
